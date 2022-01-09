@@ -12,6 +12,9 @@ import re
 import seaborn as sns
 from scipy.stats import pearsonr
 from sklearn.linear_model import LinearRegression
+from sklearn.linear_model import Ridge
+from sklearn.linear_model import Lasso
+from sklearn.model_selection import  cross_val_score
 from sklearn.metrics import mean_squared_error, r2_score
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
@@ -135,8 +138,11 @@ crab_length_reg = LinearRegression()
 crab_length_reg.fit(crab_length,y)
 prediction_space = np.linspace(min(crab_length), max(crab_length)).reshape(-1,1)
 plt.scatter(crab_length,y,color='blue')
+plt.ylabel('Crab Age')
+plt.xlabel('Crab Length (CM)')
 plt.plot(prediction_space,crab_length_reg.predict(prediction_space),color='black',linewidth=3)
 plt.show()
+print (crab_length_reg.score(crab_length,y))
 
 #Making single prediction using 'Diameter'
 crab_diameter = X[:,2]
@@ -148,6 +154,16 @@ plt.ylabel('Crab Age')
 plt.xlabel('Crab Diameter (CM)')
 plt.show()
 
+crab_diameter_reg = LinearRegression()
+crab_diameter_reg.fit(crab_diameter,y)
+prediction_space = np.linspace(min(crab_diameter), max(crab_diameter)).reshape(-1,1)
+plt.scatter(crab_diameter,y,color='blue')
+plt.ylabel('Crab Age')
+plt.xlabel('Crab Diameter (CM)')
+plt.plot(prediction_space,crab_diameter_reg.predict(prediction_space),color='black',linewidth=3)
+plt.show()
+print (crab_diameter_reg.score(crab_diameter,y))
+
 #Making single prediction using 'Height'
 crab_height = X[:,3]
 #y = y.reshape(-1,1)
@@ -158,6 +174,16 @@ plt.ylabel('Crab Age')
 plt.xlabel('Crab Height (CM)')
 plt.show()
 
+crab_height_reg = LinearRegression()
+crab_height_reg.fit(crab_height,y)
+prediction_space = np.linspace(min(crab_height), max(crab_height)).reshape(-1,1)
+plt.scatter(crab_height,y,color='blue')
+plt.ylabel('Crab Age')
+plt.xlabel('Crab Height (CM)')
+plt.plot(prediction_space,crab_height_reg.predict(prediction_space),color='black',linewidth=3)
+plt.show()
+print (crab_height_reg.score(crab_height,y))
+
 #Making single prediction using 'Weight'
 crab_weight = X[:,4]
 #y = y.reshape(-1,1)
@@ -167,3 +193,58 @@ plt.scatter(crab_weight,y)
 plt.ylabel('Crab Age')
 plt.xlabel('Crab Weight (Gram)')
 plt.show()
+
+crab_weight_reg = LinearRegression()
+crab_weight_reg.fit(crab_weight,y)
+prediction_space = np.linspace(min(crab_weight), max(crab_weight)).reshape(-1,1)
+plt.scatter(crab_weight,y,color='blue')
+plt.ylabel('Crab Age')
+plt.xlabel('Crab Weight (Gram)')
+plt.plot(prediction_space,crab_weight_reg.predict(prediction_space),color='black',linewidth=3)
+plt.show()
+print (crab_weight_reg.score(crab_weight,y))
+
+#Use get dummies function to prepare dataset for LinearRegression Model
+crab_converted_dummies = pd.get_dummies(crab_converted,drop_first=True)
+print (crab_converted_dummies.columns)
+print (crab_converted_dummies.head())
+
+#Split the prepared dataset into Training and Testing in 70% and 30% ratio
+X = crab_converted_dummies.drop('Age', axis = 1).values
+y = crab_converted_dummies['Age'].values
+
+print (X,y)
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.3, random_state = 21)
+
+#Fit the model and predict
+crab_final = LinearRegression()
+crab_final.fit(X_train, y_train)
+y_pred = crab_final.predict(X_test)
+
+#Show score
+print("R^2: {}".format(crab_final.score(X_test, y_test)))
+rmse = np.sqrt(mean_squared_error(y_test,y_pred))
+print("Root Mean Squared Error: {}".format(rmse))
+
+#Cross validation score
+cv_results = cross_val_score(crab_final, X, y, cv = 5)
+print (cv_results)
+
+#Perform Ridge Regression
+ridge = Ridge(alpha = 0.1, normalize=True)
+ridge.fit(X_train, y_train)
+ridge_pred = ridge.predict(X_test)
+print (ridge.score(X_test, y_test))
+
+#Perform Lasso Regression to show what features are best for predicting target
+names = crab_converted_dummies.drop('Age', axis = 1).columns
+lasso = Lasso(alpha=0.1)
+lasso_coef = lasso.fit(X, y).coef_
+_ = plt.plot(range(len(names)), lasso_coef)
+_ = plt.xticks(range(len(names)), names, rotation=60)
+_ = plt.ylabel('Coefficients')
+plt.show()
+
+
+
