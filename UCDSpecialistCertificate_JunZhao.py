@@ -323,7 +323,7 @@ print("Mean Absolute Error: {}".format(mae))
 
 
 
-#Regex milestone
+#Regex milestone: find string and certain string pattern, substitute string with another string
 
 r1 = re.findall(r"certificate", "I have completed the certificate for Specialist Certificate for Data Analytics")
 print (r1)
@@ -331,10 +331,31 @@ print (r1)
 r2 = re.findall(r"c\w+", "I have completed the certificate for Specialist Certificate for Data Analytics")
 print (r2)
 
+r3 = re.sub(r"cat", "dog", "I have a cat call ray and another cat called buddy")
+print (r3)
 
 
+
+#list: using for loop to print string in the list
+#list: using for loop and conditions to print numbers in the list with calculation
 mylist = ['bulldog', 'Beagledog', 'cat', 'fish', 'Shepherddog']
-print (re.search(r"dog", mylist))
+mylist2 = [20,50,35,45,100]
+for i in mylist:
+    print (i)
+for a,b in enumerate(mylist2):
+    if b > 40:
+        mylist2[a] = mylist2[a]*2
+        print (mylist2)
+        
+
+#Retrieve data using API from Alpha Vintage website
+key = 'T4ZTWUIJ0YCWCKJA'
+from alpha_vantage.foreignexchange import ForeignExchange
+fx=ForeignExchange(key,output_format='pandas')
+fxdata=fx.get_currency_exchange_daily('USD','BTC',outputsize='compact')
+USD_BTC_Daily= pd.DataFrame(fxdata[0])
+print (USD_BTC_Daily)
+USD_BTC_Daily.plot(title='USD to BTC Daily Rate')
 
 
 
