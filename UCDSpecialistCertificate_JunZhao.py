@@ -14,15 +14,15 @@ from scipy.stats import pearsonr
 from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.linear_model import LinearRegression
-from sklearn.linear_model import ElasticNet
-from sklearn.model_selection import GridSearchCV
+from sklearn.tree import DecisionTreeRegressor
+from sklearn.ensemble import GradientBoostingRegressor
+from sklearn.feature_selection import RFE
+from sklearn.svm import SVR
 from scipy.stats import randint
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.model_selection import RandomizedSearchCV
 from sklearn.linear_model import Ridge
 from sklearn.linear_model import Lasso
 from sklearn.model_selection import  cross_val_score
-from sklearn.metrics import mean_squared_error, r2_score
+from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 
@@ -250,9 +250,11 @@ y_pred = crab_final.predict(X_test)
 print("R^2: {}".format(crab_final.score(X_test, y_test)))
 rmse = np.sqrt(mean_squared_error(y_test,y_pred))
 print("Root Mean Squared Error: {}".format(rmse))
+mae = mean_absolute_error(y_test, y_pred)
+print("Mean Absolute Error: {}".format(mae))
 
 #Cross validation score
-cv_results = cross_val_score(crab_final, X, y, cv = 5)
+cv_results = cross_val_score(crab_final, X, y, cv = 10)
 print (cv_results)
 
 #Perform Ridge Regression
@@ -270,32 +272,56 @@ _ = plt.xticks(range(len(names)), names, rotation=60)
 _ = plt.ylabel('Coefficients')
 plt.show()
 
-#Hyperparameter tuning GridSearchCV for KNeighbourClassifier
-param_dist = {"max_depth": [3, None],"max_features": randint(1, 9),
-              "min_samples_leaf": randint(1, 9),
-              "criterion": ["gini", "entropy"]}
+#Using RFE from feature selection to retrieve the most relevant features in the data
+estimator = SVR(kernel="linear")
+selector = RFE(estimator, n_features_to_select=7, step=1)
+selector = selector.fit(X, y)
+print (selector.support_)
+print (selector.ranking_)
 
-tree = DecisionTreeClassifier()
-tree_cv = RandomizedSearchCV(tree,param_dist , cv=5)
-tree_cv.fit(X,y)
-print("Tuned Decision Tree Parameters: {}".format(tree_cv.best_params_))
-print("Best score is {}".format(tree_cv.best_score_))
+#From RFE drop the lowest feature ranking Shell Weight first
+crab_converted.drop(columns = ["Weight","Viscera Weight"], inplace = True)
+print (crab_converted.info())
 
-#Hyperparameter take 2
-l1_space = np.linspace(0, 1, 30)
-param_grid = {'l1_ratio': l1_space}
-elastic_net = ElasticNet()
-gm_cv = GridSearchCV(elastic_net, param_grid, cv=5)
-gm_cv.fit(X_train,y_train)
-y_pred = gm_cv.predict(X_test)
-r2 = gm_cv.score(X_test, y_test)
-mse = mean_squared_error(y_test, y_pred)
-print("Tuned ElasticNet l1 ratio: {}".format(gm_cv.best_params_))
-print("Tuned ElasticNet R squared: {}".format(r2))
-print("Tuned ElasticNet MSE: {}".format(mse))
+X = crab_converted.drop('Age', axis = 1).values
+y = crab_converted['Age'].values
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.2, random_state = 101)
+crab_final = LinearRegression()
+crab_final.fit(X_train, y_train)
+y_pred = crab_final.predict(X_test)
+print("R^2: {}".format(crab_final.score(X_test, y_test)))
+rmse = np.sqrt(mean_squared_error(y_test,y_pred))
+print("Root Mean Squared Error: {}".format(rmse))
+
+#DecisionTree Regressor
+crab_final = DecisionTreeRegressor(ccp_alpha=0.0, criterion='mse', max_depth=None,max_features=None, max_leaf_nodes=30,
+min_impurity_decrease=0.0, min_impurity_split=None,
+min_samples_leaf=1, min_samples_split=30,
+min_weight_fraction_leaf=0.0, presort='deprecated',
+random_state=None, splitter='best')
+crab_final.fit(X_train, y_train)
+y_pred = crab_final.predict(X_test)
+
+print("R^2: {}".format(crab_final.score(X_test, y_test)))
+rmse = np.sqrt(mean_squared_error(y_test,y_pred))
+print("Root Mean Squared Error: {}".format(rmse))
+mae = mean_absolute_error(y_test, y_pred)
+print("Mean Absolute Error: {}".format(mae))
+
+#GradientBoosting Ensemble
+crab_final = GradientBoostingRegressor(alpha=0.9, ccp_alpha=0.0, criterion='friedman_mse',init=None, learning_rate=0.1, loss='ls', max_depth=6,max_features=None, max_leaf_nodes=None, min_impurity_decrease=0.0, min_impurity_split=None, min_samples_leaf=1, min_samples_split=2,
+min_weight_fraction_leaf=0.0, n_estimators=100, n_iter_no_change=None, presort='deprecated',random_state=None, subsample=1.0, tol=0.0001,validation_fraction=0.1, verbose=0, warm_start=False)
+crab_final.fit(X_train, y_train)
+y_pred = crab_final.predict(X_test)
+
+print("R^2: {}".format(crab_final.score(X_test, y_test)))
+rmse = np.sqrt(mean_squared_error(y_test,y_pred))
+print("Root Mean Squared Error: {}".format(rmse))
+mae = mean_absolute_error(y_test, y_pred)
+print("Mean Absolute Error: {}".format(mae))
 
 
-#49.49% is the best score for this dataset
 
 #Regex milestone
 
