@@ -10,6 +10,7 @@ import pandas as pd
 import numpy as np
 import re
 import seaborn as sns
+import requests
 from scipy.stats import pearsonr
 from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import OneHotEncoder
@@ -85,7 +86,6 @@ crab_converted = Unit_Converter(template)
         
 print (crab_converted.head())
 
-## To be continued
 
 #Subset two datasets male and female crabs to generate correlation heatmaps
 crab_converted_male = crab_converted[crab_converted['Sex'] == 'M'].reset_index(drop=True)
@@ -347,6 +347,15 @@ for a,b in enumerate(mylist2):
         mylist2[a] = mylist2[a]*2
         print (mylist2)
         
+
+#Access API data from website
+api = requests.get("http://api.open-notify.org/iss-now.json")
+print (api)
+#convert data into dictionary
+apijson = api.json()
+print (apijson)
+#slice information
+print (apijson['iss_position'])
 
 #Retrieve data using API from Alpha Vintage website
 key = 'T4ZTWUIJ0YCWCKJA'
