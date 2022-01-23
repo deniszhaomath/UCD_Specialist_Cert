@@ -96,7 +96,7 @@ print (crab_converted_female.head())
 
 #Merge of the two dataframe male and female together by using concatenate method
 crab_merge = pd.concat([crab_converted_male, crab_converted_female], ignore_index=True)
-print (crab_merge.head())
+print (crab_merge.tail())
 
 #Heatmap showing correlation in Male crabs between age and physical attributes
 corr = crab_converted_male.corr(method='spearman')
@@ -114,6 +114,7 @@ fig.suptitle('Correlation matrix of features', fontsize=15)
 
 
 fig.tight_layout()
+print (corr)
 
 #Heatmap showing correlation in Female crabs between age and physical attributes
 corr = crab_converted_female.corr(method='spearman')
@@ -131,6 +132,7 @@ fig.suptitle('Correlation matrix of Female features', fontsize=15)
 
 
 fig.tight_layout()
+print (corr)
 
 #Data preprocessing for Sex column
 le = LabelEncoder()
